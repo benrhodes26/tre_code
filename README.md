@@ -35,6 +35,7 @@ The model will be saved to `saved_models/dataset_name/time_stamp` where `time_st
 In order to generate Figure 1 in the paper, we need to run
 
 `python build_bridges.py --config_path=1d_gauss/model/0 --analyse_1d_objective=0 --analyse_single_sample_size=0`
+
 `python build_bridges.py --config_path=1d_gauss/model/1 --analyse_1d_objective=0 --analyse_single_sample_size=0`
 
 The required figures will be placed in `saved_models/1d_gauss/results/`.
@@ -42,6 +43,7 @@ The required figures will be placed in `saved_models/1d_gauss/results/`.
 To generate the data for Figure 2 in the paper, we need to run
 
 `python build_bridges.py --config_path=1d_gauss/model/0 --analyse_1d_objective=0 --analyse_single_sample_size=-1`
+
 `python build_bridges.py --config_path=1d_gauss/model/1 --analyse_1d_objective=0 --analyse_single_sample_size=-1`
 
 This code may take a while to run (e.g. an hour, but depends on the size of the grid we use to evaluate the objective function). Note that these commands only generate the data for Figure 2 (which is saved to `saved_models/1d_gauss/time_stamp`). To actually create Figure 2, we then run the jupyter notebook in `notebooks/sample_efficiency_curves.ipynb`.
