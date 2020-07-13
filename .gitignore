@@ -1,0 +1,12 @@
+.idea/
+.ipynb
+.ipynb*
+*.sh
+saved_models/
+configs/
+.idea/
+configs/
+*.txt
+density_data
+*pycache*
+
