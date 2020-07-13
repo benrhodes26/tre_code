@@ -18,14 +18,11 @@ def analyse_objective_for_1d_gauss_multiple_sample_sizes(config, graph, sess, tr
 
     print("all theta diffs: ", theta_diffs)
 
-    fig_dir = path_join(config.save_dir, "figs/")
-    os.makedirs(fig_dir, exist_ok=True)
-
     if len(config.initial_waymark_indices) == 2:
         filename = "one_ratio_theta_diffs"
     else:
         filename = "tre_theta_diffs"
-    np.savez(path_join(fig_dir, filename), theta_diffs=np.array(theta_diffs))
+    np.savez(path_join(config.save_dir, filename), theta_diffs=np.array(theta_diffs))
 
 
 def analyse_objective_fn_for_1d_gauss(g, sess, train_dp, config, get_feed_dict, theta_diffs=None, do_plot=False, do_load=None):
