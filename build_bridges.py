@@ -517,23 +517,24 @@ def save_lowdim_energies(g, sess, config, dp):
         noise_coefs = sess.run(g.waymark_construction_results.noise_multipliers,
                                feed_dict={g.waymark_idxs: waymark_idxs, g.bridge_idxs: bridge_idxs})
         data_coefs = (1 - noise_coefs**2)**0.5
+
         means = noise_coefs * config.noise_dist_gaussian_loc[0]
         vars = ((data_coefs**2) * config.data_args["std"]**2) + ((noise_coefs**2) * config.noise_dist_gaussian_stds[0]**2)
-        stds = vars**0.5
-        true_wmarks = [norm(loc=m, scale=s) for m, s in zip(means, stds)]
+        true_wmarks = [norm(loc=m, scale=s) for m, s in zip(means, vars**0.5)]
     else:
         true_wmarks = None
 
     for gridsize in ["small", "medium", "large"]:
+
         tst_grid_coords = getattr(dp.source_1d_or_2d, "tst_coords_{}".format(gridsize))
+
         feed_dict = get_feed_dict(g, sess, dp, tst_grid_coords, config, train=False)
         neg_energies = sess.run(g.bridges_and_noise_neg_e_of_data, feed_dict)  # (n_tst, n_ratios)
 
-
         dp.source_1d_or_2d.plot_neg_energies(neg_energies, config.save_dir + "figs/", "{}_density_plots".format(gridsize),
-                                       gridsize=gridsize, true_wmarks=true_wmarks)
+                                             gridsize=gridsize, true_wmarks=true_wmarks)
         dp.source_1d_or_2d.plot_neg_energies(neg_energies, config.save_dir + "figs/", "{}_log_density_plots".format(gridsize),
-                                       log_domain=True, gridsize=gridsize, true_wmarks=true_wmarks)
+                                             log_domain=True, gridsize=gridsize, true_wmarks=true_wmarks)
 
         best_save_dir = get_metrics_data_dir(config.save_dir, epoch_i="best")
         np.savez(os.path.join(best_save_dir, "tst_grid"), neg_energies=neg_energies)
@@ -573,13 +574,13 @@ def set_debug_params(args, config):
 def load_config():
     """load & augment experiment configuration"""
     parser = ArgumentParser(description='Train TRE model.', formatter_class=ArgumentDefaultsHelpFormatter)
-    # parser.add_argument('--config_path', type=str, default="1d_gauss/model/1")
-    parser.add_argument('--config_path', type=str, default="gaussians/model/4")
+    parser.add_argument('--config_path', type=str, default="1d_gauss/model/1")
+    # parser.add_argument('--config_path', type=str, default="gaussians/model/4")
     # parser.add_argument('--config_path', type=str, default="mnist/model/0")
     # parser.add_argument('--config_path', type=str, default="multiomniglot/model/0")
     parser.add_argument('--restore_model', type=int, default=-1)
     parser.add_argument('--only_eval_model', type=int, default=-1)
-    parser.add_argument('--analyse_1d_objective', type=int, default=-1)
+    parser.add_argument('--analyse_1d_objective', type=int, default=0)  # revert
     parser.add_argument('--analyse_single_sample_size', type=int, default=0)
     parser.add_argument('--load_1d_arrays_from_disk', type=int, default=-1)
     parser.add_argument('--debug', type=int, default=-1)
@@ -642,8 +643,8 @@ def main():
         # if using the 1d gaussian dataset, analyse the objective function
         if config.analyse_1d_objective:
             if config.analyse_single_sample_size:
-                analyse_objective_fn_for_1d_gauss(graph, sess, train_dp, config, get_feed_dict,
-                                                  do_plot=True, do_load=config.load_1d_arrays_from_disk)
+                analyse_objective_fn_for_1d_gauss(graph, sess, train_dp, config, get_feed_dict, do_plot=True,
+                                                  do_load=config.load_1d_arrays_from_disk)
             else:
                 analyse_objective_for_1d_gauss_multiple_sample_sizes(config, graph, sess, train_dp, get_feed_dict)
             return

@@ -114,9 +114,9 @@ def build_noise_dist(name, data, config, event_shape=None, flow_training_bool=No
                 noise_dist = tfd.TransformedDistribution(distribution=pre_noise_dist, bijector=tfp.bijectors.Reshape(event_shape))
             else:
                 noise_dist = tfd.Independent(tfd.Normal(name="noise_dist",
-                                                       loc=loc,
-                                                       scale=gaussian_stds),
-                                            reinterpreted_batch_ndims=event_dims_rank)
+                                                        loc=loc,
+                                                        scale=gaussian_stds),
+                                             reinterpreted_batch_ndims=event_dims_rank)
 
     elif name == "flow":
         noise_dist, _ = build_flow(config, data, flow_training_bool=flow_training_bool)
@@ -296,7 +296,16 @@ def build_energies(config,
                    ):
 
     if not config.do_mutual_info_estimation:
-        if config.network_type == "quadratic":
+
+        if config.network_type == "linear":
+            energy_obj = LinearHeads(input_dim=config.n_dims,
+                                     bridge_idxs=bridge_idxs,
+                                     max_num_ratios=max_num_ratios,
+                                     use_single_head=config.get("use_single_head", False),
+                                     max_spectral_norm_params=config.get("max_spectral_norm_params", None)
+                                     )
+
+        elif config.network_type == "quadratic":
             energy_obj = QuadraticHeads(input_dim=config.n_dims,
                                         bridge_idxs=bridge_idxs,
                                         max_num_ratios=max_num_ratios,

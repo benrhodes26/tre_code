@@ -235,9 +235,9 @@ class OneDimMoG(OneDimData):
         params = [(c, self.std) for c in centres]
         self.gaussians = [norm(*p) for p in params]
         self.weights = np.ones(self.n_comps) * (1/self.n_comps)
+
         if self.outliers:
             self.gaussians.append(norm(2.0, self.std))
-            # self.gaussians.append(truncnorm(-np.inf, 0.75, loc=2.0, scale=self.std))
             self.weights *= 0.9
             self.weights = np.insert(self.weights, self.n_comps, 0.1)
 

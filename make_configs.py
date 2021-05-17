@@ -145,13 +145,14 @@ def make_1d_configs():
 def make_1d_gauss_configs():
     config = make_1d_configs()
     config["data"]["dataset_name"] = "1d_gauss"
-    config["data"]["data_args"] = {"n_gaussians": 1, "std": 1e-6, "n_samples": 10000, "outliers": False}
+    config["data"]["data_args"] = {"n_gaussians": 1, "mean": 0.0, "std": 0.1, "n_samples": 10000, "outliers": False}
 
-    config["data"]["noise_dist_gaussian_stds"] = [1.0]
-    config["data"]["noise_dist_gaussian_loc"] = [0.]
+    config["data"]["noise_dist_gaussian_stds"] = [config["data"]["data_args"]["std"]]
+    config["data"]["noise_dist_gaussian_loc"] = [2.0]
 
-    config["architecture"]["network_type"] = "quadratic"
-    config["architecture"]["quadratic_head_use_linear_term"] = False
+    config["architecture"]["network_type"] = "linear"
+    # config["architecture"]["network_type"] = "quadratic"
+    config["architecture"]["quadratic_head_use_linear_term"] = True
     config["optimisation"]["energy_lr"] = 1e-4
     config["optimisation"]["n_batch"] = 1000
 
@@ -160,7 +161,8 @@ def make_1d_gauss_configs():
           ["noise_dist_name", "linear_combo_alphas", "initial_waymark_indices"],
           [
               ["gaussian", *get_poly_wmark_coefs(num=2, p=1.0)],
-              ["gaussian", *get_poly_wmark_coefs(num=5, p=7.0)],
+              ["gaussian", *get_poly_wmark_coefs(num=5, p=1.0)],
+              # ["gaussian", *get_poly_wmark_coefs(num=5, p=7.0)],
           ]
           ]
 

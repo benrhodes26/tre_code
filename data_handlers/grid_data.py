@@ -124,7 +124,7 @@ class GridData:
         ax_num = 0
 
         true_logp = getattr(self, "grid_logp_{}".format(gridsize))
-        true_logp =  true_logp if log_domain else np.exp(true_logp)
+        true_logp = true_logp if log_domain else np.exp(true_logp)
         title = r"$p_{data}(\mathbf{x}) \equiv p_{0}(\mathbf{x})$" if not log_domain else \
             r"$\log p_{data}(\mathbf{x}) \equiv \log p_{0}(\mathbf{x})$"
 
