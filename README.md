@@ -1,7 +1,7 @@
 # Telescoping Density-Ratio Estimation
 This repository contains the code used for the paper
 
-> Rhodes, B., Xu, K. and Gutmann, M.U., 2020. Telescoping Density-Ratio Estimation. arXiv preprint arXiv:2006.12204.
+> [Rhodes, B., Xu, K. and Gutmann, M.U., 2020. Telescoping Density-Ratio Estimation. arXiv preprint arXiv:2006.12204.](https://arxiv.org/abs/2006.12204)
 
 This repository is no longer active. However, you are welcome to email the lead author at ben.rhodes@ed.ac.uk with questions regarding the code.
 
