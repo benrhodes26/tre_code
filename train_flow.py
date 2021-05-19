@@ -217,9 +217,9 @@ def eval_model(g, sess, train_dp, val_dp, config, all_train_data=False):
         tst_grid_coords = getattr(val_dp.source_1d_or_2d, "tst_coords_{}".format(gridsize))
         logprobs = sess.run(g.flow_log_p, {g.data: tst_grid_coords, g.keep_prob: 1.0})  # (n_tst, n_ratios)
         logprobs = np.expand_dims(logprobs, axis=1)
-        val_dp.source_1d_or_2d.plot_neg_energies(logprobs, config.save_dir + "figs/",
+        val_dp.source_1d_or_2d.plot_logratios(logprobs, config.save_dir + "figs/",
                                            "{}_density_plots".format(gridsize), gridsize=gridsize)
-        val_dp.source_1d_or_2d.plot_neg_energies(logprobs, config.save_dir + "figs/",
+        val_dp.source_1d_or_2d.plot_logratios(logprobs, config.save_dir + "figs/",
                                            "{}_log_density_plots".format(gridsize), log_domain=True, gridsize=gridsize)
 
 

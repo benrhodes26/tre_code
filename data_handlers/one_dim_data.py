@@ -89,22 +89,27 @@ class OneDimData:
         plt.tight_layout()
         save_fig(dir_name, name)
 
-    def plot_neg_energies(self, logp_experts, dir_name, fig_name, log_domain=False, gridsize="medium", true_wmarks=None):
-        """plot individual energies, as well as their sum, on the whole grid
+    def plot_logratios(self, logp_experts, dir_name, fig_name, log_domain=False, gridsize="medium", true_wmarks=None):
+        """plot individual experts in the TRE ebm, as well as their sum, on the whole grid
 
         args
-        energies: array of shape (tst_grid_size, n_experts)
+        logp_experts: array of shape (tst_grid_size, n_experts)
         """
         grid = getattr(self, "tst_grid_{}".format(gridsize))
+
+        # plot the true logp versus model logp on
+        true_logp = getattr(self, "grid_logp_{}".format(gridsize))
+        fig, ax = plt.subplots(1, 1)
+        self.plot_product_of_experts(ax, log_domain, logp_experts, true_logp, grid)
+        save_fig(dir_name, fig_name + "total", fig=fig)
 
         n_experts = logp_experts.shape[-1]
         axs, fig = create_subplot_with_max_num_cols(n_experts + 1, max_n_cols=4)
         ax_num = 0
 
-        true_logp = getattr(self, "grid_logp_{}".format(gridsize))
         self.plot_product_of_experts(axs[ax_num], log_domain, logp_experts, true_logp, grid)
-        ax_num += 1
 
+        ax_num += 1
         for i in range(ax_num, n_experts+ax_num):
             self.plot_expert(axs[i], i, n_experts + ax_num-1, log_domain, logp_experts, grid, true_wmarks)
 
@@ -137,10 +142,12 @@ class OneDimData:
             title = r"$p_{%s}(\mathbf{x})$" % j if i == noise_idx \
                 else r"$r_{%s}(\mathbf{x}; \mathbf{\theta}_{%s})$" % (j, j)
 
+        # plot estimated ratio (or base distribution)
         r = logp_experts[:, j] if log_domain else np.exp(logp_experts[:, j])
         r[r > 10**32] = 10**32
         self.make_plot(ax, grid, r, title, "model")
 
+        # plot ground truth ratio
         if i < noise_idx and true_wmarks is not None:
             true_r = true_wmarks[j].logpdf(grid) - true_wmarks[j + 1].logpdf(grid)
             true_r = true_r if log_domain else np.exp(true_r)
@@ -194,7 +201,6 @@ class OneDimData:
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         ax.text(1.35, 1.12, str, transform=ax.transAxes, fontsize=20, verticalalignment='top', bbox=props)
 
-
     def __repr__(self):
         return "OneDimData"
 
@@ -204,9 +210,10 @@ class OneDimMoG(OneDimData):
     1d Mixture of Gaussians
     """
 
-    def __init__(self, n_gaussians, std, n_samples, outliers=False, **kwargs):
+    def __init__(self, n_gaussians, mean, std, n_samples, outliers=False, **kwargs):
         self.n_comps = n_gaussians
         self.outliers = outliers
+        self.mean = mean
         self.std = std
         self.outer_gauss_coords = [0.2, 0.8]
         self.n_samples = n_samples
@@ -226,7 +233,7 @@ class OneDimMoG(OneDimData):
 
     def make_pdf(self):
         if self.n_comps == 1:
-            centres = np.array([0.0])
+            centres = np.array([self.mean])
         else:
             centres = np.linspace(*self.outer_gauss_coords, self.n_comps)
             # dist = centres[1] - centres[0]

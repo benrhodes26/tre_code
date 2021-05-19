@@ -508,6 +508,9 @@ def save_best_results(config):
 # noinspection PyUnresolvedReferences
 def save_lowdim_energies(g, sess, config, dp):
 
+    fig_data_dir = config.save_dir + "figs/data/"
+    os.makedirs(fig_data_dir, exist_ok=True)
+
     if config.dataset_name == "1d_gauss" and \
             config.data_args["n_gaussians"] == 1 and \
             config.noise_dist_name == "gaussian" and \
@@ -518,26 +521,82 @@ def save_lowdim_energies(g, sess, config, dp):
                                feed_dict={g.waymark_idxs: waymark_idxs, g.bridge_idxs: bridge_idxs})
         data_coefs = (1 - noise_coefs**2)**0.5
 
-        means = noise_coefs * config.noise_dist_gaussian_loc[0]
+        means = data_coefs * config.data_args["mean"] + noise_coefs * config.noise_dist_gaussian_loc[0]
         vars = ((data_coefs**2) * config.data_args["std"]**2) + ((noise_coefs**2) * config.noise_dist_gaussian_stds[0]**2)
         true_wmarks = [norm(loc=m, scale=s) for m, s in zip(means, vars**0.5)]
+
+        plot_and_save_1dgauss_logratio_metrics(config, dp, g, sess, true_wmarks, fig_data_dir)
     else:
         true_wmarks = None
 
-    for gridsize in ["small", "medium", "large"]:
+    # for gridsize in ["small", "medium", "large"]:
+    for gridsize in ["large"]:
 
         tst_grid_coords = getattr(dp.source_1d_or_2d, "tst_coords_{}".format(gridsize))
 
         feed_dict = get_feed_dict(g, sess, dp, tst_grid_coords, config, train=False)
-        neg_energies = sess.run(g.bridges_and_noise_neg_e_of_data, feed_dict)  # (n_tst, n_ratios)
+        logr_vals_at_p = sess.run(g.bridges_and_noise_neg_e_of_data, feed_dict)  # (n_tst, n_ratios+1)
 
-        dp.source_1d_or_2d.plot_neg_energies(neg_energies, config.save_dir + "figs/", "{}_density_plots".format(gridsize),
-                                             gridsize=gridsize, true_wmarks=true_wmarks)
-        dp.source_1d_or_2d.plot_neg_energies(neg_energies, config.save_dir + "figs/", "{}_log_density_plots".format(gridsize),
-                                             log_domain=True, gridsize=gridsize, true_wmarks=true_wmarks)
+        dp.source_1d_or_2d.plot_logratios(logr_vals_at_p, config.save_dir + "figs/", "{}_density_plots".format(gridsize),
+                                          gridsize=gridsize, true_wmarks=true_wmarks)
+        dp.source_1d_or_2d.plot_logratios(logr_vals_at_p, config.save_dir + "figs/", "{}_log_density_plots".format(gridsize),
+                                          log_domain=True, gridsize=gridsize, true_wmarks=true_wmarks)
 
-        best_save_dir = get_metrics_data_dir(config.save_dir, epoch_i="best")
-        np.savez(os.path.join(best_save_dir, "tst_grid"), neg_energies=neg_energies)
+        np.savez(os.path.join(fig_data_dir, "ratios_on_{}_tst_grid".format(gridsize)), xaxis=tst_grid_coords, logratio_vals=logr_vals_at_p)
+        np.savez(os.path.join(fig_data_dir, "model_on_{}_tst_grid".format(gridsize)), xaxis=tst_grid_coords, logp_model=logr_vals_at_p.sum(-1))
+
+
+def plot_and_save_1dgauss_logratio_metrics(config, dp, g, sess, true_wmarks, fig_data_dir):
+
+    # estimate KL between data dist & noise dist
+    p_batch = true_wmarks[0].rvs(1000).reshape(-1, 1)
+    q_batch = true_wmarks[-1].rvs(1000).reshape(-1, 1)
+
+    feed_dict = get_feed_dict(g, sess, dp, p_batch, config, train=False)
+    logr_vals_at_p = sess.run(g.bridges_and_noise_neg_e_of_data, feed_dict)
+
+    feed_dict = get_feed_dict(g, sess, dp, q_batch, config, train=False)
+    logr_vals_at_q = sess.run(g.bridges_and_noise_neg_e_of_data, feed_dict)
+
+    # estimated kl
+    estimated_logratio_vals_at_p = logr_vals_at_p[:, :-1].sum(-1)  # (1000,)
+    estimated_logratio_vals_at_q = logr_vals_at_q[:, :-1].sum(-1)  # (1000,)
+    kl_estimate = estimated_logratio_vals_at_p.mean()
+
+    # true KL
+    true_logratio_vals_at_p = np.squeeze(true_wmarks[0].logpdf(p_batch)) - np.squeeze(
+        true_wmarks[-1].logpdf(p_batch))
+    true_logratio_vals_at_q = np.squeeze(true_wmarks[0].logpdf(q_batch)) - np.squeeze(
+        true_wmarks[-1].logpdf(q_batch))
+    true_kl = true_logratio_vals_at_p.mean()
+
+    fig, ax = plt.subplots(1, 1)
+
+    ax.scatter(true_logratio_vals_at_p, estimated_logratio_vals_at_p, label="samples from p")
+    ax.scatter(true_logratio_vals_at_q, estimated_logratio_vals_at_q, label="samples from q")
+
+    ax.set_xlabel("True logratio")
+    ax.set_ylabel("Estimated logratio")
+
+    min_v = min(true_logratio_vals_at_q.min(), estimated_logratio_vals_at_q.min(),
+                true_logratio_vals_at_p.min(), estimated_logratio_vals_at_p.min())
+    max_v = max(true_logratio_vals_at_q.max(), estimated_logratio_vals_at_q.max(),
+                true_logratio_vals_at_p.max(), estimated_logratio_vals_at_p.max())
+    line = np.linspace(min_v, max_v, 128)
+    ax.plot(line, line, linestyle="-")
+    ax.legend()
+
+    save_fig(config.save_dir + "figs/", "true_logratios_vs_estimated")
+    np.savez(os.path.join(fig_data_dir, "logr_vals_at_p"),
+             p_samples=p_batch,
+             q_samples=q_batch,
+             estimated_logratio_vals_at_p=estimated_logratio_vals_at_p,
+             estimated_logratio_vals_at_q=estimated_logratio_vals_at_q,
+             true_logratio_vals_at_p=true_logratio_vals_at_p,
+             true_logratio_vals_at_q=true_logratio_vals_at_q,
+             estimated_kl=kl_estimate,
+             true_kl=true_kl
+             )
 
 
 # noinspection PyUnresolvedReferences
@@ -580,7 +639,7 @@ def load_config():
     # parser.add_argument('--config_path', type=str, default="multiomniglot/model/0")
     parser.add_argument('--restore_model', type=int, default=-1)
     parser.add_argument('--only_eval_model', type=int, default=-1)
-    parser.add_argument('--analyse_1d_objective', type=int, default=0)  # revert
+    parser.add_argument('--analyse_1d_objective', type=int, default=-1)
     parser.add_argument('--analyse_single_sample_size', type=int, default=0)
     parser.add_argument('--load_1d_arrays_from_disk', type=int, default=-1)
     parser.add_argument('--debug', type=int, default=-1)
