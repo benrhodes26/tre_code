@@ -633,8 +633,8 @@ def set_debug_params(args, config):
 def load_config():
     """load & augment experiment configuration"""
     parser = ArgumentParser(description='Train TRE model.', formatter_class=ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--config_path', type=str, default="1d_gauss/model/1")
-    # parser.add_argument('--config_path', type=str, default="gaussians/model/4")
+    # parser.add_argument('--config_path', type=str, default="1d_gauss/model/1")
+    parser.add_argument('--config_path', type=str, default="gaussians/model/0")
     # parser.add_argument('--config_path', type=str, default="mnist/model/0")
     # parser.add_argument('--config_path', type=str, default="multiomniglot/model/0")
     parser.add_argument('--restore_model', type=int, default=-1)

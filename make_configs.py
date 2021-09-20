@@ -147,8 +147,8 @@ def make_1d_configs():
 #     config["data"]["dataset_name"] = "1d_gauss"
 #     config["data"]["data_args"] = {"n_gaussians": 1, "mean": -2.0, "std": 0.08, "n_samples": 10000, "outliers": False}
 #
-#     config["data"]["noise_dist_gaussian_stds"] = [0.15]
-#     config["data"]["noise_dist_gaussian_loc"] = [2.0]
+#     config["data"]["noise_dist_gaussian_stds"] = 0.15
+#     config["data"]["noise_dist_gaussian_loc"] = 2.0
 #
 #     # config["architecture"]["network_type"] = "linear"
 #     config["architecture"]["network_type"] = "quadratic"
@@ -175,8 +175,8 @@ def make_1d_gauss_configs():
     config["data"]["dataset_name"] = "1d_gauss"
     config["data"]["data_args"] = {"n_gaussians": 1, "mean": 0, "std": 1e-6, "n_samples": 10000, "outliers": False}
 
-    config["data"]["noise_dist_gaussian_stds"] = [1.0]
-    config["data"]["noise_dist_gaussian_loc"] = [0.0]
+    config["data"]["noise_dist_gaussian_stds"] = 1.0
+    config["data"]["noise_dist_gaussian_loc"] = 0.0
 
     # config["architecture"]["network_type"] = "linear"
     config["architecture"]["network_type"] = "quadratic"
@@ -195,32 +195,74 @@ def make_1d_gauss_configs():
 
     generate_configs_for_gridsearch(config, "model", p1, p2)
 
+#
+# def make_gaussians_configs():
+#     config = make_base_config()
+#     config["data"]["dataset_name"] = "gaussians"
+#     config["data"]["data_dist_name"] = "gaussian"
+#     config["data"]["noise_dist_name"] = "gaussian"
+#
+#     config["optimisation"]["n_epochs"] = 250
+#     config["optimisation"]["n_batch"] = 512
+#     config["optimisation"]["patience"] = 50
+#     config["optimisation"]["save_every_x_epochs"] = 10
+#
+#     # config["architecture"]["network_type"] = "mlp"
+#     config["architecture"]["network_type"] = "quadratic"
+#     config["architecture"]["quadratic_constraint_type"] = "symmetric_pos_diag"
+#     config["architecture"]["quadratic_head_use_linear_term"] = True
+#
+#     config["ais"]["ais_n_chains"] = 1000
+#     config["ais"]["ais_total_n_steps"] = 1000
+#
+#     data_args1 = {"n_samples": 100000, "n_dims": 40, "mean": -1.0, "std": 1.0}
+#     data_args2 = {"n_samples": 100000, "n_dims": 160, "mean": -0.5, "std": 1.0}
+#     data_args3 = {"n_samples": 100000, "n_dims": 320, "mean": -0.5, "std": 1.0}
+#
+#     p1 = [["data", "data", "data", "data", "data", "data", "optimisation"],
+#           ["linear_combo_alphas", "initial_waymark_indices", "n_dims",
+#            "data_args", "noise_dist_gaussian_loc", "noise_dist_gaussian_stds", "energy_lr"],
+#           [
+#               [*get_poly_wmark_coefs(num=9, p=1.0), data_args1["n_dims"], data_args1, 1.0, 1.0, 1e-4],
+#               [*get_poly_wmark_coefs(num=2, p=1.0), data_args1["n_dims"], data_args1, 1.0, 1.0, 5e-4],
+#
+#               [*get_poly_wmark_coefs(num=13, p=1.0), data_args2["n_dims"], data_args2, 0.6, 1.0, 1e-4],
+#               [*get_poly_wmark_coefs(num=2, p=1.0), data_args2["n_dims"], data_args2, 0.6, 1.0, 5e-4],
+#
+#               [*get_poly_wmark_coefs(num=17, p=1.0), data_args3["n_dims"], data_args3, 0.5, 1.0, 1e-4],
+#               [*get_poly_wmark_coefs(num=2, p=1.0), data_args3["n_dims"], data_args3, 0.5, 1.0, 5e-4],
+#           ]
+#           ]
+#
+#     generate_configs_for_gridsearch(config, "model", p1)
+
 
 def make_gaussians_configs():
     config = make_base_config()
     config["data"]["dataset_name"] = "gaussians"
     config["data"]["n_dims"] = 80
     config["data"]["data_args"] = {"n_samples": 100000, "dims": config["data"]["n_dims"], "true_mutual_info": 20}
-    config["data"]["noise_dist_name"] = "gaussian"
     config["data"]["data_dist_name"] = "gaussian"
+
+    config["data"]["noise_dist_name"] = "gaussian"
 
     config["optimisation"]["n_epochs"] = 250
     config["optimisation"]["n_batch"] = 512
     config["optimisation"]["patience"] = 50
     config["optimisation"]["save_every_x_epochs"] = 10
 
+    # config["architecture"]["network_type"] = "mlp"
     config["architecture"]["network_type"] = "quadratic"
     config["architecture"]["quadratic_constraint_type"] = "symmetric_pos_diag"
-    config["architecture"]["quadratic_head_use_linear_term"] = False
+    config["architecture"]["quadratic_head_use_linear_term"] = True
 
     config["ais"]["ais_n_chains"] = 1000
     config["ais"]["ais_total_n_steps"] = 1000
 
-    # WAYMARK GRIDSEARCH
-    data_args1 = {"n_samples": 100000, "n_dims": 40, "true_mutual_info": 10, "heterogeneous": False}
-    data_args2 = {"n_samples": 100000, "n_dims": 80, "true_mutual_info": 20, "heterogeneous": False}
-    data_args3 = {"n_samples": 100000, "n_dims": 160, "true_mutual_info": 40, "heterogeneous": False}
-    data_args4 = {"n_samples": 100000, "n_dims": 320, "true_mutual_info": 80, "heterogeneous": False}
+    data_args1 = {"n_samples": 100000, "n_dims": 40, "true_mutual_info": 10}
+    data_args2 = {"n_samples": 100000, "n_dims": 80, "true_mutual_info": 20}
+    data_args3 = {"n_samples": 100000, "n_dims": 160, "true_mutual_info": 40}
+    data_args4 = {"n_samples": 100000, "n_dims": 320, "true_mutual_info": 80}
 
     p1 = [["data", "data", "data", "data", "optimisation"],
           ["linear_combo_alphas", "initial_waymark_indices", "n_dims", "data_args", "energy_lr"],
@@ -326,12 +368,13 @@ def make_multiomniglot_configs():
     config["data"]["n_event_dims_to_mix"] = 1  # don't mix pixel values, just image blocks
 
     config["architecture"]["use_attention"] = False
-    config["architecture"]["use_average_pooling"] = True
+    config["architecture"]["use_average_pooling"] = False
     config["optimisation"]["n_batch"] = 256
 
     stacked = False  # if False, use spatial layout of images
 
-    p1 = [["data", "data", "data", "data", "architecture", "architecture", "architecture", "architecture", "architecture", "optimisation"],
+    p1 = [["data", "data", "data", "data",
+           "architecture", "architecture", "architecture", "architecture", "architecture", "optimisation"],
           ["data_args", "n_dims", "waymark_mixing_increment", "initial_waymark_indices",
            "network_type", "channel_widths", "init_kernel_shape", "init_kernel_strides", "mlp_hidden_size", "n_epochs"],
           [

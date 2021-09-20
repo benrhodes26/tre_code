@@ -133,7 +133,7 @@ def compute_obj_fn_for_one_ratio(g,
 
     if use_quadratic:
         sigma_data = config.data_args["std"]
-        sigma_noise = config.noise_dist_gaussian_stds[0]
+        sigma_noise = config.noise_dist_gaussian_stds
 
         # Each TRE ratio estimator has a scale parameter. Let's fix each of these scale params to their correct value.
         alpha, alpha_next = wmark_coeffs[ratio_idx], wmark_coeffs[ratio_idx + 1]
@@ -225,7 +225,7 @@ def compute_mu_obj_fn_for_one_ratio(g,
                                     get_feed_dict):
 
     data_sigma = config.data_args["std"]
-    noise_sigma = config.noise_dist_gaussian_stds[0]
+    noise_sigma = config.noise_dist_gaussian_stds
 
     # Each TRE ratio estimator has a scale parameter. Let's fix each of these scale params to their correct value.
     alpha_i, beta_i = wmark_coeffs[i], wmark_coeffs[i + 1]

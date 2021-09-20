@@ -170,11 +170,6 @@ def load_data_providers_and_update_conf(config, include_test=False, dataset_name
     if hasattr(train_dp.source, "shift"):
         config.update({"preprocess_shift": train_dp.source.shift})
 
-    if config["dataset_name"] == "gaussians":
-        config["noise_dist_gaussian_stds"] = [x**0.5 for x in train_dp.source.variances]
-        config["true_mutual_info"] = train_dp.source.true_mutual_info
-        # config["true_js"] = train_dp.data_source.empirical_jensen_shannon_div(config["n_samples"])
-
     if hasattr(train_dp, "labels") and train_dp.labels is not None:
         labels = train_dp.labels
         label_shape = labels.shape

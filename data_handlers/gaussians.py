@@ -18,32 +18,40 @@ class GAUSSIANS:
         Constructs the dataset.
         """
 
-        def __init__(self, data, vars, cov_mat, mi):
+        def __init__(self, data, vars, cov_mat):
             self.x = data
             self.ldj = 0
             self.N = self.x.shape[0]     # number of datapoints
 
             self.variances = vars
             self.cov_matrix = cov_mat
-            self.true_mutual_info = mi
             self.original_scale = 1.0
 
-    def __init__(self, n_samples, n_dims=80, true_mutual_info=40, **kwargs):
+    def __init__(self, n_samples, n_dims=80, true_mutual_info=None, mean=None, std=None, **kwargs):
+
+        if (mean is not None) or (std is not None):
+            assert (mean is not None) and (std is not None)
+            assert true_mutual_info is None, "Can't specify mean/std AND true_mutual_info"
+        else:
+            assert true_mutual_info is not None, "Must specify MI if mean+std are unspecified"
 
         self.n_dims = n_dims
-        self.rho = self.get_rho_from_mi(true_mutual_info, n_dims)  # correlation coefficient
-        self.rhos = np.ones(n_dims // 2) * self.rho
-        self.variances = np.ones(n_dims)
-        self.cov_matrix = block_diag(*[[[1, self.rho], [self.rho, 1]] for _ in range(n_dims // 2)])
-        self.true_mutual_info = true_mutual_info
+        self.means = np.ones(n_dims) * mean
+        self.variances = np.ones(n_dims) * std**2
+
+        if true_mutual_info is not None:
+            self.rho = self.get_rho_from_mi(true_mutual_info, n_dims)  # correlation coefficient
+            self.cov_matrix = block_diag(*[[[1, self.rho], [self.rho, 1]] for _ in range(n_dims // 2)])
+        else:
+            self.cov_matrix = np.diag(self.variances)
 
         self.denom_cov_matrix = np.diag(self.variances)
 
         trn, val, tst = self.sample_data(n_samples), self.sample_data(n_samples), self.sample_data(n_samples)
 
-        self.trn = self.Data(trn, self.variances, self.cov_matrix, self.true_mutual_info)
-        self.val = self.Data(val, self.variances, self.cov_matrix, self.true_mutual_info)
-        self.tst = self.Data(tst, self.variances, self.cov_matrix, self.true_mutual_info)
+        self.trn = self.Data(trn, self.variances, self.cov_matrix)
+        self.val = self.Data(val, self.variances, self.cov_matrix)
+        self.tst = self.Data(tst, self.variances, self.cov_matrix)
 
         self.n_dims = trn.shape[1]
 
@@ -60,12 +68,12 @@ class GAUSSIANS:
         return self.sample_gaussian(n_samples, self.denom_cov_matrix)
 
     def sample_gaussian(self, n_samples, cov_matrix):
-        prod_of_marginals = multivariate_normal(mean=np.zeros(self.n_dims), cov=cov_matrix)
+        prod_of_marginals = multivariate_normal(mean=self.means, cov=cov_matrix)
         return prod_of_marginals.rvs(n_samples)
 
     def numerator_log_prob(self, u):
-        bivariate_normal = multivariate_normal(mean=np.zeros(self.n_dims), cov=self.cov_matrix)
-        log_probs = bivariate_normal.logpdf(u)
+        mvn = multivariate_normal(mean=self.means, cov=self.cov_matrix)
+        log_probs = mvn.logpdf(u)
         return log_probs
 
     def denominator_log_prob(self, u):
@@ -164,16 +172,14 @@ class GAUSSIANS:
         plt.show()
 
 
-def main(hetero=False):
+def main():
     n, d = 100000, 80
     true_mi = 40
 
-    dataset = GAUSSIANS(n_samples=n, n_dims=d, true_mutual_info=true_mi, heterogeneous=hetero)
-    data = dataset.trn.x
+    dataset = GAUSSIANS(n_samples=n, n_dims=d, true_mutual_info=true_mi)
     print("True MI is {}, empirical MI is: {}".format(dataset.true_mutual_info, dataset.empirical_mutual_info()))
 
     return dataset
-
 
 
 if __name__ == "__main__":
