@@ -215,9 +215,9 @@ def make_1d_gauss_configs():
 #     config["ais"]["ais_n_chains"] = 1000
 #     config["ais"]["ais_total_n_steps"] = 1000
 #
-#     data_args1 = {"n_samples": 100000, "n_dims": 40, "mean": -1.0, "std": 1.0}
-#     data_args2 = {"n_samples": 100000, "n_dims": 160, "mean": -0.5, "std": 1.0}
-#     data_args3 = {"n_samples": 100000, "n_dims": 320, "mean": -0.5, "std": 1.0}
+#     data_args1 = {"n_samples": 100000, "n_dims": 40, "base_mi": 20, "mean": -1.0, "std": 1.0}
+#     data_args2 = {"n_samples": 100000, "n_dims": 160, "base_mi": 40, "mean": -0.5, "std": 1.0}
+#     data_args3 = {"n_samples": 100000, "n_dims": 320, "base_mi": 80, "mean": -0.5, "std": 1.0}
 #
 #     p1 = [["data", "data", "data", "data", "data", "data", "optimisation"],
 #           ["linear_combo_alphas", "initial_waymark_indices", "n_dims",

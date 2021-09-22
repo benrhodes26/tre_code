@@ -27,10 +27,10 @@ class GAUSSIANS:
             self.cov_matrix = cov_mat
             self.original_scale = 1.0
 
-    def __init__(self, n_samples, n_dims=80, true_mutual_info=None, mean=None, std=None, **kwargs):
+    def __init__(self, n_samples, n_dims=80, true_mutual_info=None, mean=None, std=None, base_mi=None, **kwargs):
 
-        if (mean is not None) or (std is not None):
-            assert (mean is not None) and (std is not None)
+        if (mean is not None) or (std is not None) or (base_mi is not None):
+            assert (mean is not None) and (std is not None) and (base_mi is not None)
             assert true_mutual_info is None, "Can't specify mean/std AND true_mutual_info"
         else:
             assert true_mutual_info is not None, "Must specify MI if mean+std are unspecified"
@@ -43,7 +43,8 @@ class GAUSSIANS:
             self.rho = self.get_rho_from_mi(true_mutual_info, n_dims)  # correlation coefficient
             self.cov_matrix = block_diag(*[[[1, self.rho], [self.rho, 1]] for _ in range(n_dims // 2)])
         else:
-            self.cov_matrix = np.diag(self.variances)
+            self.rho = self.get_rho_from_mi(base_mi, n_dims)  # correlation coefficient
+            self.cov_matrix = block_diag(*[[[1, self.rho], [self.rho, 1]] for _ in range(n_dims // 2)])
 
         self.denom_cov_matrix = np.diag(self.variances)
 
