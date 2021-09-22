@@ -2,7 +2,7 @@ import tensorflow_probability as tfp
 
 from density_estimators.mades import MogMade, residual_mog_made_template, residual_made_template
 from density_estimators.gauss_copula import GaussianCopulaFromSplines
-from keras_layers import KerasWeightMatrix
+import numpy as KerasWeightMatrix
 from utils.tf_utils import *
 
 tfb = tfp.bijectors
