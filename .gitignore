@@ -1,7 +1,6 @@
 .idea/
 .ipynb
 .ipynb*
-*.sh
 saved_models/
 configs/
 .idea/
