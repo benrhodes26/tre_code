@@ -5,7 +5,7 @@ import os
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
-from keras_layers import GatuOrTanh
+# from keras_layers import GatuOrTanh
 from tensorflow.keras import layers as k_layers
 from tensorflow.keras import initializers
 from __init__ import project_root
@@ -94,8 +94,8 @@ def get_tf_activation(act_name):
 
     if act_name == "leaky_relu":
         activation = k_layers.LeakyReLU
-    elif act_name == "gatu":
-        activation = GatuOrTanh  # gatu for 4D inputs, otherwise Relu
+    # elif act_name == "gatu":
+        # activation = GatuOrTanh  # gatu for 4D inputs, otherwise Relu
     else:
         activation = lambda: k_layers.Activation(act_name)
 
