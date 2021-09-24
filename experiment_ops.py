@@ -103,10 +103,10 @@ def build_noise_dist(name, data, config, event_shape=None, flow_training_bool=No
         else:
             loc = tf.ones(event_shape, tf.float32) * config.noise_dist_gaussian_loc
 
-        if ("noise_dist_gaussian_stds" not in config) or config.noise_dist_gaussian_stds is None:
+        if ("noise_dist_gaussian_std" not in config) or config.noise_dist_gaussian_std is None:
             gaussian_stds = tf.ones(shape=event_shape, dtype=tf.float32)
         else:
-            gaussian_stds = tf.ones(event_shape, tf.float32) * config.noise_dist_gaussian_stds
+            gaussian_stds = tf.ones(event_shape, tf.float32) * config.noise_dist_gaussian_std
 
         with tf.compat.v1.variable_scope("noise_dist"):
             if "full_covariance" in name:

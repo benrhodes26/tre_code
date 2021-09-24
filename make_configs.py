@@ -116,28 +116,12 @@ def make_base_config():
 def make_1d_configs():
     config = make_base_config()
     config["data"]["n_dims"] = 1
-    config["data"]["uniform_noise_dist_range"] = [-1.0, 1.0]
-    config["data"]["noise_dist_ring_mog_scale"] = 0.05
-    config["data"]["noise_dist_ring_mog_radius"] = 0.9
 
     config["architecture"]["mlp_hidden_size"] = 32
-    # config["architecture"]["mlp_output_size"] = 64
     config["architecture"]["mlp_n_blocks"] = 2
 
-    config["optimisation"]["energy_lr"] = 1e-4
     config["optimisation"]["n_batch"] = 512
-    config["optimisation"]["n_epochs"] = 500
-
-    config["ais"]["ais_n_chains"] = 1000
-    config["ais"]["only_sample_n_chains"] = 1000
-    config["ais"]["ais_total_n_steps"] = 1000
-    config["ais"]["only_sample_total_n_steps"] = 1000
-
-    config["flow"]["flow_type"] = "rq_nsf_coupling"
-    config["flow"]["flow_num_spline_bins"] = 32
-    config["flow"]["flow_lr"] = 1e-4
-    config["flow"]["flow_n_bijectors"] = 3
-    config["flow"]["flow_hidden_size"] = 64
+    config["optimisation"]["n_epochs"] = 250
 
     return config
 
@@ -145,29 +129,36 @@ def make_1d_configs():
 # def make_1d_gauss_configs():
 #     config = make_1d_configs()
 #     config["data"]["dataset_name"] = "1d_gauss"
-#     config["data"]["data_args"] = {"n_gaussians": 1, "mean": -2.0, "std": 0.08, "n_samples": 10000, "outliers": False}
+#     config["data"]["data_args"] = {"n_gaussians": 1, "mean": 0, "std": 1e-6, "n_samples": 10000, "outliers": False}
+#     config["data"]["noise_dist_name"] = "gaussian"
+#     config["data"]["noise_dist_gaussian_loc"] = 0.0
+#     config["data"]["noise_dist_gaussian_std"] = 1.0
 #
-#     config["data"]["noise_dist_gaussian_stds"] = 0.15
-#     config["data"]["noise_dist_gaussian_loc"] = 2.0
-#
-#     # config["architecture"]["network_type"] = "linear"
 #     config["architecture"]["network_type"] = "quadratic"
 #     config["architecture"]["quadratic_head_use_linear_term"] = True
-#     config["optimisation"]["energy_lr"] = 1e-3
+#     config["optimisation"]["energy_lr"] = 1e-2
 #     config["optimisation"]["n_batch"] = 1000
 #
-#     p1 = ["optimisation", "loss_function", ["logistic", "nwj", "lsq"]]
-#     p2 = [["data", "data", "data"],
-#           ["noise_dist_name", "linear_combo_alphas", "initial_waymark_indices"],
+#     dargs1 = {"n_gaussians": 1, "mean": 0.0, "std": 1e-6, "n_samples": 10000}
+#     dargs2 = {"n_gaussians": 1, "mean": -1.0, "std": 0.08, "n_samples": 10000}
+#     dargs3 = {"n_gaussians": 1, "mean": -2.0, "std": 0.08, "n_samples": 10000}
+#     dargs4 = {"n_gaussians": 1, "mean": -5.0, "std": 1.0, "n_samples": 10000}
+#
+#     p1 = [["data", "data", "data", "data", "data"],
+#           ["data_args",
+#            "noise_dist_gaussian_loc",
+#            "noise_dist_gaussian_std",
+#            "linear_combo_alphas",
+#            "initial_waymark_indices"],
 #           [
-#               ["gaussian", *get_poly_wmark_coefs(num=2, p=1.0)],
-#               # ["gaussian", *get_poly_wmark_coefs(num=20, p=0.5)],
-#               ["gaussian", *get_symmetric_poly_noise_scales(n=20, p=2.0)],
-#               # ["gaussian", *get_poly_wmark_coefs(num=5, p=7.0)],
+#               [dargs1, 0.0, 1.0, *get_poly_wmark_coefs(num=4, p=5.0)],
+#               [dargs2, 2.0, 0.15, *get_poly_wmark_coefs(num=20, p=1.0)],
+#               [dargs3, 2.0, 0.15, *get_poly_wmark_coefs(num=30, p=1.0)],
+#               [dargs4, 5.0, 1.0, *get_poly_wmark_coefs(num=10, p=1.0)],
 #           ]
 #           ]
 #
-#     generate_configs_for_gridsearch(config, "model", p1, p2)
+#     generate_configs_for_gridsearch(config, "model", p1)
 
 
 def make_1d_gauss_configs():
@@ -175,8 +166,8 @@ def make_1d_gauss_configs():
     config["data"]["dataset_name"] = "1d_gauss"
     config["data"]["data_args"] = {"n_gaussians": 1, "mean": 0, "std": 1e-6, "n_samples": 10000, "outliers": False}
 
-    config["data"]["noise_dist_gaussian_stds"] = 1.0
     config["data"]["noise_dist_gaussian_loc"] = 0.0
+    config["data"]["noise_dist_gaussian_std"] = 1.0
 
     # config["architecture"]["network_type"] = "linear"
     config["architecture"]["network_type"] = "quadratic"
@@ -221,7 +212,7 @@ def make_1d_gauss_configs():
 #
 #     p1 = [["data", "data", "data", "data", "data", "data", "optimisation"],
 #           ["linear_combo_alphas", "initial_waymark_indices", "n_dims",
-#            "data_args", "noise_dist_gaussian_loc", "noise_dist_gaussian_stds", "energy_lr"],
+#            "data_args", "noise_dist_gaussian_loc", "noise_dist_gaussian_std", "energy_lr"],
 #           [
 #               [*get_poly_wmark_coefs(num=9, p=1.0), data_args1["n_dims"], data_args1, 1.0, 1.0, 1e-4],
 #               [*get_poly_wmark_coefs(num=2, p=1.0), data_args1["n_dims"], data_args1, 1.0, 1.0, 5e-4],
